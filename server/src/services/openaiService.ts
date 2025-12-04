@@ -20,7 +20,7 @@ export const transcribeAudio = async (filePath: string): Promise<string> => {
     }
 };
 
-export const generateDiagnosis = async (transcription: string): Promise<any> => {
+export const generateDiagnosis = async (transcription: string, history?: OpenAI.Chat.Completions.ChatCompletionMessageParam[]): Promise<any> => {
     const systemPrompt = `Você é um assistente médico sênior. Analise a transcrição da consulta abaixo e gere um relatório técnico. Seja direto, use terminologia médica correta e formate a resposta estritamente como JSON com a seguinte estrutura:
   {
     "diagnostico_provavel": "string",
@@ -29,13 +29,20 @@ export const generateDiagnosis = async (transcription: string): Promise<any> => 
     "medicamentos_possiveis": ["string"]
   }`;
 
+    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+        { role: 'system', content: systemPrompt },
+    ];
+
+    if (history && history.length > 0) {
+        messages.push(...history);
+    }
+
+    messages.push({ role: 'user', content: transcription });
+
     try {
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: transcription },
-            ],
+            messages: messages,
             response_format: { type: 'json_object' },
         });
 

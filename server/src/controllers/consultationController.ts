@@ -22,14 +22,14 @@ export const transcribe = async (req: Request, res: Response) => {
 };
 
 export const diagnose = async (req: Request, res: Response) => {
-    const { text } = req.body;
+    const { text, history } = req.body;
 
     if (!text) {
         return res.status(400).json({ error: 'No text provided' });
     }
 
     try {
-        const diagnosis = await openaiService.generateDiagnosis(text);
+        const diagnosis = await openaiService.generateDiagnosis(text, history);
         res.json(diagnosis);
     } catch (error) {
         res.status(500).json({ error: 'Diagnosis generation failed' });
